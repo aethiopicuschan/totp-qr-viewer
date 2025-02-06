@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/pquerna/otp/totp"
+	"golang.design/x/clipboard"
 )
 
 const (
@@ -20,13 +21,15 @@ const (
 )
 
 type Game struct {
-	theme      *Theme
-	qrcode     *QRCode
-	textFields []*TextField
-	buttons    []*Button
+	shortcutWatcher *ShortcutWatcher
+	theme           *Theme
+	qrcode          *QRCode
+	textFields      []*TextField
+	buttons         []*Button
 }
 
 func (g *Game) Update() (err error) {
+	g.shortcutWatcher.Update()
 	if g.textFields == nil {
 		g.textFields = append(g.textFields, NewTextField(image.Rect(16, 16, screenWidth-100, 16+textFieldHeight), WithLabel(labelSecret)))
 		g.textFields = append(g.textFields, NewTextField(image.Rect(16, 16+textFieldHeight+16, screenWidth-100, 16+textFieldHeight*2+16), WithLabel(labelIssuer)))
@@ -152,9 +155,27 @@ func main() {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("TOTP QR Viewer")
 
-	if err := ebiten.RunGame(&Game{
+	err := clipboard.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	g := &Game{
 		theme: GetDefaultTheme(),
-	}); err != nil {
+	}
+	g.shortcutWatcher = NewShortcutWatcher(func(s Shortcut) {
+		switch s {
+		case ShortcutPaste:
+			for _, tf := range g.textFields {
+				if tf.field.IsFocused() {
+					b := clipboard.Read(clipboard.FmtText)
+					tf.Paste(string(b))
+				}
+			}
+		}
+	})
+
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }
