@@ -9,7 +9,7 @@
 
 This tool provides a simple GUI to display a TOTP QR code by specifying the Secret, Issuer, and Account Name.
 
-![ScreenShot](https://github.com/user-attachments/assets/7be60373-dd1e-4c6b-bffd-12731626845c)
+![ScreenShot](https://github.com/user-attachments/assets/0b71b09e-bb05-4538-8c04-1d7eaa2afb22)
 
 ## Installation
 
