@@ -2,11 +2,13 @@ package main
 
 import (
 	"crypto/rand"
+	"fmt"
 	"image"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"golang.design/x/clipboard"
 )
@@ -117,11 +119,8 @@ func (g *Game) Update() (err error) {
 		}
 	}
 	if secret != "" && issuer != "" && accountName != "" {
-		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      issuer,
-			AccountName: accountName,
-			Secret:      []byte(secret),
-		})
+		uri := fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s", issuer, accountName, secret, issuer)
+		key, err := otp.NewKeyFromURL(uri)
 		if err != nil {
 			return err
 		}

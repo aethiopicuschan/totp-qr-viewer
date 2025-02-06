@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"image/color"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -43,13 +44,17 @@ func (q *QRCode) Draw(screen *ebiten.Image) {
 	if q.img == nil {
 		return
 	}
+	code, err := totp.GenerateCode(q.key.Secret(), time.Now())
+	if err != nil {
+		top := &text.DrawOptions{}
+		top.GeoM.Translate(float64(q.bounds.Min.X), float64(q.bounds.Min.Y))
+		top.ColorScale.ScaleWithColor(color.RGBA{0xff, 0, 0, 0xff})
+		text.Draw(screen, err.Error(), fontFace, top)
+		return
+	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(q.bounds.Min.X), float64(q.bounds.Min.Y))
 	screen.DrawImage(q.img, op)
-	code, err := totp.GenerateCode(q.key.Secret(), time.Now())
-	if err != nil {
-		return
-	}
 	top := &text.DrawOptions{}
 	scale := 6
 	top.GeoM.Scale(float64(scale), float64(scale))
