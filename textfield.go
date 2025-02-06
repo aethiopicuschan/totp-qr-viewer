@@ -128,6 +128,16 @@ func (t *TextField) Blur() {
 	t.field.Blur()
 }
 
+func (t *TextField) Paste(text string) {
+	currentText := t.field.Text()
+	selectionStart, selectionEnd := t.field.Selection()
+
+	newText := currentText[:selectionStart] + text + currentText[selectionEnd:]
+	newSelectionStart := selectionStart + len(text)
+
+	t.field.SetTextAndSelection(newText, newSelectionStart, newSelectionStart)
+}
+
 func (t *TextField) Update() error {
 	if !t.field.IsFocused() {
 		return nil
